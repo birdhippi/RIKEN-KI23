@@ -1,0 +1,288 @@
+# Task 1 - Literature
+# 1. Read the research article of the hands-on working group you are assigned to.
+# 2. Answer the following questions:
+#	a. What is the medically relevant insight from the article?
+#	Answer: Trasncriptional response to insulin induction in white adipose tissue is selective and varies between obese, never obese and post-bariatric surgery patients. In obese women the genes for lipogenesis and cholesterol biosynthesis are activated, while insulin responding genes are attenuated.
+#
+#	b. What genomics technology/technologies were used?
+#	Answer: CAGE-sequencing
+#
+# 3. Further related research questions
+#	a. List and explain at least three questions/hypotheses you can think of that #extend the analysis presented in the paper.
+#	Answer: 
+1. What is the functional relationship insulin sensitivity and lipogenesis/cholesterol biosynthesis? How (or do) they affect each other?
+
+2. The study was performed only on women patients, does the findings of the study relate to male subjects too?
+
+3. What is the importance of the genes that are shared among obese/never obese and post-obese women? What is the importance of genes that were attenuated? Can we say that attenuated genes collectively cause insulin resistance in obese women?
+
+4. Can women who lost weight progressively  get similar normalization of gene expression?
+
+5. What is the relationship between insulin-mediated gene regulation and epigenetic modifications?
+
+#
+#	b.  [Optional] Devise a computational analysis strategy for (some of) the listed questions under 3a.
+#
+###########################################################################################################################################
+# Task 4 - Using R example datasets
+# 1.Use the R internal CO2 dataset ("data(CO2)").
+data("CO2")
+
+# 2.Describe briefly the content of the CO2 dataset using the help function.
+help("CO2")
+# Description
+# The CO2 data frame has 84 rows and 5 columns of data from an experiment on the cold 
+# tolerance of the grass species Echinochloa crus-galli.
+
+# 3.Calculate the average and median CO2 uptake of the plants from Quebec and Mississippi.
+
+library(tidyverse) #Initiate tidyverse package
+data("CO2") #load CO2 data
+View(CO2) #view CO2 data
+mean_output <- CO2 %>% 
+  group_by(Type, conc, Treatment) %>%
+  select(uptake) %>%
+  summarise_all(list(mean = mean, median = median))
+mean_output
+
+# [Optional] In the "airway" example data from Bioconductor, how many genes are expressed in each sample?
+# How many genes are not expreessed in any sample?
+
+# 1.Install the dataset from Bioconductor.
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("airway")
+
+library("airway")
+data("airway")
+counts <- assay(airway,"counts") #total number of genes and samples
+
+# 2.How many genes are expressed in each sample?
+
+# 3.How many genes are not express in any sample?
+
+###########################################################################################################################################
+
+# Task 5
+# 1.Write a function that calculates the ratio of the mean and median of a given vector.
+
+mean_median_ratio <- function(input_vector) {
+  # Calculate the mean of the input vector
+  mean_value <- mean(input_vector)
+  
+  # Calculate the median of the input vector
+  median_value <- median(input_vector)
+  
+  # Check if the median is zero
+  if (median_value == 0) {
+    stop("Median is zero, cannot divide by zero.")
+  }
+  
+  # Calculate the ratio of the mean to the median
+  ratio <- mean_value / median_value
+  
+  # Return the ratio
+  return(ratio)
+}
+
+# Test:
+vector_example <- c(1,2,3,4,5)
+result <- mean_median_ratio(vector_example)
+cat("The ratio of mean to median is:", result, "\n")
+
+###########################################################################################################################################
+
+# 2.Write a function that ignores the lowest and the highest value from a given vector and calculate the mean.
+calculate_mean_without_extremes <- function(input_vector) {
+  # Check if the input vector has at least 3 elements
+  if (length(input_vector) < 3) {
+    stop("Input vector must have at least 3 elements.")
+  }
+  
+  # Sort the input vector in ascending order
+  sorted_vector <- sort(input_vector)
+  
+  # Remove the lowest and highest values by indexing
+  trimmed_vector <- sorted_vector[-c(1, length(sorted_vector))]
+  
+  # Calculate the mean of the trimmed vector
+  mean_value <- mean(trimmed_vector)
+  
+  # Return the mean
+  return(mean_value)
+}
+
+# Test:
+vector_example <- c(5, 10, 15, 20, 99)
+result <- calculate_mean_without_extremes(vector_example)
+cat("The mean without extremes is:", result, "\n")
+
+########################################################################################################################################
+
+# 3.Read about piping from here:https://r4ds.had.co.nz/pipes.html#pipes (you don’t have
+# to learn everything, a basic understanding of the usage is enough). Write a short
+# (max. 300 characters, no spaces) explanation of why, how, and when not to use pipes.
+
+# Why to use pipes?
+# 1. To reduce the burden of making new objects with (or without) name increments for 
+# intermediate steps, which may make the code too cluttered and lead to confusion during 
+# debugging.
+# 2. To make the code easy to read by people when writing functions.
+
+# Why not to use pipes?
+# 1. If functions use current environment.
+# 2. If functions use lazy evaluations.
+
+# When not to use pipes?
+# 1. If the pipe needs to do more than 10 steps.
+# 2. If there are combinations of multiple inputs and outputs.
+# 3. If there is a need to express complex relationship, cross-dependency.
+
+###########################################################################################################################################
+
+# 4. Familiarize yourself with the apply-family of functions (apply, lapply, sapply etc.)
+# http://uc-r.github.io/apply_family
+# Write a short explanation (max. 300 characters, no spaces) of why they could be
+# useful in your work.
+
+# Apply family consists of function that can be used instead of loops. The difference
+# between members include type of object that function is applied to and the output result. 
+# They are useful in cases when we want to apply a function on matrices and data frames.
+# apply() Can be used to apply a function on many values in the dataframe with a short line of code.
+# lapply() for lists...output as list
+# sapply() for lists...output simplified
+# tapply() for vectors
+
+###########################################################################################################################################
+
+# Task 6 - Basic visualizations with R
+# 1a. using the basic 'hist' function as well as ‘ggplot’ and ‘geom_histogram’
+functions from the ggplot2 package. Optimize the plots for example by trying
+several different 'breaks'. Note that ggplot2-based functions give you many
+more options for changing the visualization parameters, try some of them.
+
+data_guys <- read.csv("filelocation") #load dataset into R
+library(tidyverse) #load tidyverse (if not loaded yet)
+
+ggplot(data_guys, aes(x = length, fill = species)) + #create a histogram with x axis= Height, distributed by species.
+  geom_histogram(binwidth = 8, position = "identity", alpha = 0.7) + #customize appearance of the histogram
+  labs(title = "Histogram of Length by Species", #add titles
+       x = "Height",
+       y = "Frequency")
+
+# 1b. Do the same comparison as in a. but with boxplots. If you want to use the
+ggplot2-package, use the functions ‘ggplot’ and ‘geom_boxplot’.
+
+Barplot_guys <- ggplot(data_guys, aes(species, length, color = species)) + #create a histogram with x axis= Height, distributed by species.
+  geom_boxplot(position = "identity", alpha = 0.7) + #customize appearance of the histogram
+  geom_point(size = 1)+ #see distribution of each data point
+  geom_jitter(alpha = .4)+ #scatter the points a little bit to see clearly how points are distributed
+  labs(title = "Histogram of Length by Species", #add titles
+       x = "Species",
+       y = "Height")
+
+# 1c. Save the plots with the "png", "pdf" and "svg" formats. In which situation would you use which file format?
+ggsave("Barplot_guys.png", plot = Barplot_guys, width = 6, height = 4, dpi = 300)  # Save as PNG, high quality, transparent.
+ggsave("Barplot_guys.pdf", plot = Barplot_guys, width = 6, height = 4)  # Save as PDF, high-quality, scalable, printing.
+ggsave("Barplot_guys.svg", plot = Barplot_guys, width = 6, height = 4)  # Save as SVG, vector graphics with web compatability andd interactivity.
+
+ggsave("Histogram_guys.png", plot = Histogram_guys, width = 6, height = 4, dpi = 300)  # Save as PNG
+ggsave("Histogram_guys.pdf", plot = Histogram_guys, width = 6, height = 4)  # Save as PDF
+ggsave("Histogram_guys.svg", plot = Histogram_guys, width = 6, height = 4)  # Save as SVG
+
+2. Load the gene expression data matrix from the ‘microarray_data.tab’ dataset provided in the shared folder, it is a big tabular separated matrix.
+
+2a. How big is the matrix in terms of rows and columns?
+matrix_dimensions <- dim(microarray_data_tab) #assign dimensions of the dataframe to an object
+print(matrix_dimensions) print the result (rows, columns)
+
+2b. Count the missing values per gene and visualize this result.
+missing_value_count <- colSums(is.na(microarray_data_tab)) #count number of missing values
+print(missing_value_count) #print the result (table from g1 -> g1000 with number of NA values/row)
+
+missing_data <- data.frame(Gene = colnames(microarray_data_tab), MissingCount = missing_value_count) #assign column and row names and store in "missing_data" object
+
+ggplot(data = missing_data, aes(x = Gene, y = MissingCount)) + #visualize as a dotplot
+  geom_point(size = 1) + #dotplot with dot sizes = 1
+  labs(title = "Missing Values per Gene", #title and labels
+       x = "Gene",
+       y = "Count")+
+ theme_minimal()
+2c. Find the genes for which there are more than X% (X=10%, 20%, 50%)
+missing values.
+
+# Define a threshold percentage (e.g., 10%, 20%, 50%)
+threshold_percentage <- 10 #or 20, 50
+
+# Calculate the threshold count of missing values
+threshold_count <- (threshold_percentage / 100) * nrow(microarray_data_tab)
+
+# Find genes with more than the threshold count of missing values
+genes_threshold_missing <- colnames(microarray_data_tab)[missing_value_count > threshold_count]
+print(genes_threshold_missing)
+
+2d. Replace the missing values by the average expression value for the particular
+gene. (Note: Imputing data has to be used with caution!)
+# Replace missing values by the average expression value for the particular gene
+for (gene in genes_threshold_missing) {
+  gene_values <- data_matrix[gene, ]
+  average_value <- mean(gene_values, na.rm = TRUE)
+  data_matrix[gene, is.na(gene_values)] <- average_value
+}
+
+# Task 7
+#0. Install the Tidybiology package, which includes the data "chromosome" and "proteins"
+devtools::install_github("hirscheylab/tidybiology")
+
+#1. Calculate the mean, median and max values using chromosome data for variations, protein coding genes and miRNA.
+library(tidybiology) #load the library tidybiology
+library(tidyverse) #load the library tidyverse
+data('chromosome') # load the data chromosome
+sum_up_chromosome <- chromosome %>% #assign data chromosome to sum_up and pipe through
+  select(variations, protein_codinggenes, mi_rna)%>% #select variations, protein coding genes and miRNA
+  summarise_all(list(mean = mean, median = median, max = max)) #summarise mean, median and max values for each selected group
+
+#2.
+chromosome %>% #use chromosome data
+              ggplot(mapping = aes(x = id,
+                     y = basepairs, fill = id))+ #map with x axis to be chromosome number (id), y axis to be basepairs(size), fill according to the id
+              geom_bar(stat = "identity", width = 0.5)+ #make a barplot with certain width
+              labs(title = "Chromosome size ditribution")+ #add a title
+              theme(plot.title = element_text(hjust = 0.8)) #move the title to the center
+
+#3.
+chromosome %>% #use chromosome data
+  ggplot(mapping = aes(x = id,
+                       y = basepairs, fill = protein_codinggenes))+ #map with x axis to be chromosome number (id), y axis to be basepairs(size), fill according to the protein coding genes
+  geom_bar(stat = "identity", width = 0.5, position = position_dodge())+ #make a barplot with certain width
+  labs(title = "Chromosome size ditribution")+ #add a title
+  theme(plot.title = element_text(hjust = 0.8)) #move the title to the center
+              
+chromosome %>% #use chromosome data
+  ggplot(mapping = aes(x = id,
+                       y = basepairs, fill = mi_rna))+ #map with x axis to be chromosome number (id), y axis to be basepairs(size), fill according to the miRNA
+  geom_bar(stat = "identity", width = 0.5, position = position_dodge())+ #make a barplot with certain width
+  labs(title = "Chromosome size ditribution")+ #add a title
+  theme(plot.title = element_text(hjust = 0.8)) #move the title to the center
+
+#4
+   data('proteins') # load the data proteins
+ sum_up_proteins <- proteins %>% #assign data proteins to sum_up_proteins and pipe through
+   select(length, mass)%>% #select length and mass
+   summarise_all(list(mean = mean, median = median, max = max)) #summarise mean, median and max values for each selected group
+ 
+ proteins %>% #use proteins data
+   ggplot(mapping = aes(x = length,
+                        y = mass, fill = gene_name))+ #map with x axis to be length, y axis to be mass, fill according to the gene name
+   geom_point()+ #make a barplot with certain width
+   labs(title = "Protein size vs length")+ #add a title
+   theme(plot.title = element_text(hjust = 0.8)) #move the title to the center
+#
+#
+#
+#
+#
+#
+#
+#
